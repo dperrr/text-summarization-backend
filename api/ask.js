@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   const userId = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
   userLimits[userId] = (userLimits[userId] || 0) + 1;
-  if (userLimits[userId] > 2) return res.status(429).json({ error: "Limit reached (2 calls per user)" });
+  if (userLimits[userId] > 10) return res.status(429).json({ error: "Limit reached (10 calls per user)" });
 
   const prompt = `Please create a concise and coherent summary from the following extractive summary.
 The sentences were selected using TF-IDF and Aho-Corasick keyword matching algorithms.
