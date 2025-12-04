@@ -6,6 +6,10 @@ const paragraphSchema = z.object({
   paragraphType: z.string().describe("Type of the paragraph: expository, narrative, descriptive, argumentative, etc."),
   mainIdea: z.string().describe("The main idea of the paragraph."),
   keyPoints: z.array(z.string()).describe("Key points extracted from the paragraph."),
+  grammarAccuracy: z.number()
+  .min(0, "Grammar accuracy must be at least 0")
+  .max(100, "Grammar accuracy cannot exceed 100")
+  .describe("Grammar accuracy of the paragraph from 1 to 100 in percentage"),
   tone: z.string().describe("Tone of the paragraph: positive, negative, neutral, etc."),
 });
 
@@ -18,22 +22,23 @@ export default async function structuredSummary(req, res) {
     return res.status(400).json({ error: "abstractiveSummary is required" });
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY_STRUCT });
     
     const prompt = `
-Analyze the following paragraph and return JSON strictly following this exact schema:
-{
-  "paragraphType": "string (Type of the paragraph: expository, narrative, descriptive, argumentative, etc.)",
-  "mainIdea": "string (The main idea of the paragraph)",
-  "keyPoints": ["array of strings with key points"],
-  "tone": "string (Tone: positive, negative, neutral, etc.)"
-}
+    Analyze the following paragraph and return JSON strictly following this exact schema:
+    {
+      "paragraphType": "string (Type of the paragraph: expository, narrative, descriptive, argumentative, etc.)",
+      "mainIdea": "string (The main idea of the paragraph)",
+      "keyPoints": ["array of strings with key points"],
+      "grammarAccuracy": "number (Grammar accuracy of the paragraph from 1 to 100)",
+      "tone": "string (Tone: positive, negative, neutral, etc.)"
+    }
 
-Do NOT add any other fields. Do NOT add any text outside the JSON.
+    Do NOT add any other fields. Do NOT add any text outside the JSON.
 
-Paragraph:
-${abstractiveSummary}
-`;
+    Paragraph:
+    ${abstractiveSummary}
+    `;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
